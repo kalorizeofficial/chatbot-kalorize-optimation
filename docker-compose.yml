@@ -1,0 +1,19 @@
+services:
+  # my application name is app-dev
+  chatbot:
+    build:
+      # context is the path to the Dockerfile where i want to run the docker-compose
+      context: .
+      # dockerfile is the name of the dockerfile which i created in the root directory of the project
+      dockerfile: Dockerfile
+    # ports is the port number where i want to run my application locally:container-port
+    network_mode: host
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # volumes is the path to the project directory where i want to run the docker-compose
+    # it stores the data in the container and syncs it with the project container data when we sotp or start the container. localdireatory:containerdirectory
+    volumes:
+      - .:/app
+      # this is to ignore the node_modules directory in the project directory because it is too large to store in the container which will slow down the container
+      - /app/node_modules
