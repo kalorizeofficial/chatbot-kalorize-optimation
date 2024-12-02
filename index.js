@@ -31,31 +31,15 @@ async function connectToWhatsApp() {
     // Coba koneksi ke database dengan penanganan error
     let db;
     try {
-        db = await mysql.createPool({
+        db = await mysql.createConnection({
             host: process.env.DB_HOST,
             user: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
             database: process.env.DB_DATABASE,
-            waitForConnections: true,
-            connectionLimit: 10,
-            queueLimit: 0,
-            connectTimeout: 10000, // 10 detik
-            acquireTimeout: 10000
         });
-
-         
-
         console.log("Connected to database successfully");
     } catch (error) {
         console.error("Database connection failed:", error);
-        // Tangani error pada koneksi
-        db.on('error', async (err) => {
-            console.error('Database connection error:', err);
-            if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-                console.log('Reconnecting to database...');
-                db = await createPool();
-            }
-        });
         return;
     }
 
