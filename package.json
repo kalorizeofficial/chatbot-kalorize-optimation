@@ -12,9 +12,15 @@
   "license": "ISC",
   "dependencies": {
     "@whiskeysockets/baileys": "^6.7.9",
+    "chatbot": "file:",
     "child_process": "^1.0.2",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
+    "fs": "^0.0.1-security",
     "mysql2": "^3.11.3",
-    "qrcode-terminal": "^0.12.0"
+    "pdfkit": "^0.15.2",
+    "pdfkit-table": "^0.1.99",
+    "qrcode-terminal": "^0.12.0",
+    "xlsx": "^0.18.5"
   }
 }
