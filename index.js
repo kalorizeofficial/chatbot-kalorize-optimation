@@ -4,6 +4,10 @@ const qrcode = require('qrcode-terminal');
 const mysql = require('mysql2/promise');
 const { pelangganMitraHandler } = require('./pelangganMitra');
 require('dotenv').config();
+const { sekaliMakanService } = require('./services/sekaliMakanService');
+const { bulananMakanService } = require('./services/bulananMakanService');
+const { jsonToExcelAndPdf } = require('./services/jsonToExcelAndPdf');
+
 
 
 async function isPelangganMitra(phoneNumber, db) {
@@ -148,30 +152,131 @@ async function connectToWhatsApp() {
                         await sock.sendMessage(message.key.remoteJid, { text: 'Yah... Ada masalah nih..\nCoba lagi dan pastikan masukkan dalam bentuk angka saja ya.\n\n*Contoh : 100*\n\n\nKetik *0* untuk membatalkan' });
                         return;
                     }
-                    userStep[from].numberOfPeople = userMessage;
-                    
-                    // Tetapkan nilai jumlah kombinasi menu menjadi 3 tanpa menanyakan pengguna
-                    userStep[from].menuCombination = 3;
-                    
-                    const { totalBudget, numberOfPeople, menuCombination } = userStep[from];
+                    userStep[from].jumlahPorsi = userMessage;
+                    const { totalBudget, jumlahPorsi } = userStep[from];
                     const phoneNumber = from;
-
+                
                     try {
                         await sock.sendMessage(message.key.remoteJid, { text: 'Terima kasih, tunggu sebentar lagi disiapin...' });
-                        const output = await runPythonScript(totalBudget, numberOfPeople, menuCombination, phoneNumber);
-                        await sock.sendMessage(message.key.remoteJid, { text: `${output}` });
+                        const output = await sekaliMakanService(phoneNumber, process.env.API_TOKEN, jumlahPorsi, totalBudget);
+                        await sock.sendMessage(message.key.remoteJid, { text: `Hasil optimasi:\n\n${output}` });
+                
+                        // Tambahkan opsi untuk ulangi tanpa input data baru
+                        await sock.sendMessage(message.key.remoteJid, {
+                            text: `Pilih opsi berikut:\n9. Ulangi tanpa input baru\n0. Selesai`
+                        });
+                
+                        userStep[from].step = 9; // Set step untuk opsi ulangi
                     } catch (error) {
                         await sock.sendMessage(message.key.remoteJid, { text: 'Terjadi kesalahan saat menjalankan Kalorize Optimasi.' });
                     }
+                
+                    break;
+                
+                case 9:
+                    try {
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Ulangi optimasi tanpa input data baru. Mohon tunggu...' });
+                        const { totalBudget, jumlahPorsi } = userStep[from];
+                        const phoneNumber = from;
+                        const output = await sekaliMakanService(phoneNumber, process.env.API_TOKEN, jumlahPorsi, totalBudget);
+                        await sock.sendMessage(message.key.remoteJid, { text: `Hasil optimasi (ulangi):\n\n${output}` });
+                
 
-                    userStep[from].step = 0;
+                        await sock.sendMessage(message.key.remoteJid, {
+                            text: `Pilih opsi berikut:\n9. Ulangi tanpa input baru\n0. Selesai`
+                        });
+
+                        // Kembali ke step sebelumnya
+                        userStep[from].step = 9;
+                    } catch (error) {
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Terjadi kesalahan saat menjalankan ulang optimasi.' });
+                    }
                     break;
 
                 case 4:
-                    // Step tambahan untuk opsi "Bulanan" (nanti bisa dikembangkan lebih lanjut)
-                    await sock.sendMessage(message.key.remoteJid, { text: 'Opsi Bulanan masih dalam pengembangan. Ketik *0* untuk membatalkan.' });
-
+                    if (isNaN(userMessage)) {
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Input tidak valid. Masukkan angka saja.' });
+                        return;
+                    }
+                    userStep[from].totalBudget = parseInt(userMessage); // Pastikan nilai diubah menjadi integer
+                    console.log("Total Budget set to:", userStep[from].totalBudget); // Logging untuk debugging
+                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total porsi yang kamu sediakan untuk menu bulanan?\n\nMasukkan angka saja.\n*Contoh : 1000*\n\n\nKetik *0* untuk membatalkan' });
+                    userStep[from].step = 5;
                     break;
+                    
+
+                case 5:
+                    if (isNaN(userMessage)) {
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Input tidak valid. Masukkan angka saja.' });
+                        return;
+                    }
+                    userStep[from].jumlahPorsi = userMessage;
+                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa hari unik yang kamu butuhkan? (1-30)\n\nMasukkan angka saja.\n*Contoh : 20*\n\n\nKetik *0* untuk membatalkan' });
+                    userStep[from].step = 6;
+                    break;
+
+                case 6:
+                    if (isNaN(userMessage) || userMessage < 1 || userMessage > 30) {
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Input tidak valid. Masukkan angka antara 1 dan 30.' });
+                        return;
+                    }
+                    userStep[from].jumlahHariMenu = userMessage;
+                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa kali makan per hari? (1/2/3)\n\nMasukkan angka saja.\n*Contoh : 3*\n\n\nKetik *0* untuk membatalkan' });
+                    userStep[from].step = 7;
+                    break;
+
+                case 7:
+                    if (isNaN(userMessage) || ![1, 2, 3].includes(parseInt(userMessage))) {
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Input tidak valid. Masukkan angka 1, 2, atau 3.' });
+                        return;
+                    }
+                    userStep[from].makanPerHari = parseInt(userMessage);
+                
+                    const { totalBudget: bulananBudget, jumlahPorsi: bulananPorsi, jumlahHariMenu, makanPerHari } = userStep[from];
+                    const bulananPhoneNumber = from;
+                
+                    // Tambahkan validasi untuk memastikan totalBudget terisi
+                    if (!bulananBudget || isNaN(bulananBudget)) {
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Terjadi kesalahan. Budget tidak valid. Ulangi dari awal.' });
+                        userStep[from].step = 0;
+                        return;
+                    }
+                
+                    console.log("Running bulananMakanService with parameters:");
+                    console.log(`Phone Number: ${bulananPhoneNumber}`);
+                    console.log(`Token: ${process.env.API_TOKEN}`);
+                    console.log(`Jumlah Porsi: ${bulananPorsi}`);
+                    console.log(`Budget: ${bulananBudget}`);
+                    console.log(`Jumlah Hari Menu: ${jumlahHariMenu}`);
+                    console.log(`Makan Per Hari: ${makanPerHari}`);
+                
+                    try {
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Terima kasih, tunggu sebentar lagi disiapin...' });
+                    
+                        // Jalankan bulananMakanService
+                        const jsonFilePath = await bulananMakanService(
+                            bulananPhoneNumber,
+                            process.env.API_TOKEN,
+                            bulananPorsi,
+                            bulananBudget,
+                            jumlahHariMenu,
+                            makanPerHari
+                        );
+                    
+                        // Panggil jsonToExcelAndPdf untuk konversi JSON ke PDF dan kirim file
+                        await jsonToExcelAndPdf(sock, jsonFilePath, bulananPhoneNumber);
+                    
+                        await sock.sendMessage(message.key.remoteJid, { text: 'File PDF berhasil dikirim. Periksa WhatsApp Anda.' });
+                    } catch (error) {
+                        console.error('Error during bulananMakanService execution:', error);
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Terjadi kesalahan saat mengolah data ke PDF.' });
+                    }
+                    
+                
+                    userStep[from].step = 0;
+                    break;
+                    
+                
 
                 default:
                     await sock.sendMessage(message.key.remoteJid, { text: 'Maaf, saya tidak mengerti. Coba ketik "halo" atau "info".' });
@@ -184,30 +289,7 @@ async function connectToWhatsApp() {
     sock.ev.on('creds.update', saveCreds);
 }
 
-function runPythonScript(totalBudget, numberOfPeople, menuCombination, phoneNumber) {
-    return new Promise((resolve, reject) => {
-        const token = process.env.API_TOKEN;
-        const pythonProcess = spawn('python', [
-            'menu_optimizer/menu_optimizer_local.py',
-            totalBudget,
-            numberOfPeople,
-            menuCombination,
-            phoneNumber,
-            token
-        ]);
 
-        let dataToSend = '';
-        pythonProcess.stdout.on('data', (data) => dataToSend += data.toString());
-        pythonProcess.stderr.on('data', (data) => {
-            console.error(`Python error output: ${data}`);
-            reject(data.toString());
-        });
-        pythonProcess.on('close', (code) => {
-            if (code === 0) resolve(dataToSend);
-            else reject(`Python script exited with code ${code}`);
-        });
-    });
-}
 
 // Mulai koneksi WhatsApp
 connectToWhatsApp();
