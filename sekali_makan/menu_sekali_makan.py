@@ -20,7 +20,7 @@ def load_menu_data(phone_number, token):
 
     try:
         headers = {'Authorization': f'Bearer {token}'}
-        response = requests.get(f'http://127.0.0.1:8000/api/mitra/json/{phone_number}', headers=headers)
+        response = requests.get(f'http://admin-chatbot.kalorize.com:90/api/mitra/json/{phone_number}', headers=headers)
         response.raise_for_status()
         data = response.json()
 
