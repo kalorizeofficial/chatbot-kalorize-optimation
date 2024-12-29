@@ -211,17 +211,17 @@ async function connectToWhatsApp() {
                         return;
                     }
                     userStep[from].jumlahPorsi = userMessage;
-                    await sock.sendMessage(message.key.remoteJid, { text: 'Setiap berapa hari kamu mengulangi variasi menu makanan? (contoh: 2, 3, dst.)\n\nMasukkan angka saja.\n*Contoh : 20*\n\n\nKetik *0* untuk membatalkan' });
+                    await sock.sendMessage(message.key.remoteJid, { text: 'Setiap berapa hari kamu mengulangi variasi menu makanan? pilih 1-30 (contoh: 1, 2, 30  dst.)\n\nMasukkan angka saja.\n*Contoh : 20*\n\n\nKetik *0* untuk membatalkan' });
                     userStep[from].step = 6;
                     break;
 
                 case 6:
                     if (isNaN(userMessage) || userMessage < 1 || userMessage > 30) {
-                        await sock.sendMessage(message.key.remoteJid, { text: 'Input tidak valid. Masukkan angka antara 1 dan 30.' });
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Input tidak valid. Masukkan angka antara 1 sampai 30.' });
                         return;
                     }
                     userStep[from].jumlahHariMenu = userMessage;
-                    await sock.sendMessage(message.key.remoteJid, { text: ' ⁠Setiap berapa hari kamu mengulangi variasi menu makanan? (contoh: 2, 3, dst.)\n\nMasukkan angka saja.\n*Contoh : 3*\n\n\nKetik *0* untuk membatalkan' });
+                    await sock.sendMessage(message.key.remoteJid, { text: '⁠Berapa kali kamu makan dalam 1 hari? (pilih : 1 / 2 / 3)\n\nMasukkan angka saja.\n*Contoh : 3*\n\n\nKetik *0* untuk membatalkan' });
                     userStep[from].step = 7;
                     break;
 
