@@ -127,10 +127,10 @@ async function connectToWhatsApp() {
 
                 case 1:
                     if (userMessage === "1") {
-                        await sock.sendMessage(message.key.remoteJid, { text: 'Berapa budget kamu untuk sekali makan? (dalam rupiah)\n\nMasukkan angka saja.\n*Contoh : 2000000*\n\n\nKetik *0* untuk membatalkan' });
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total budget kamu untuk sekali menyediakan menu makanan? (dalam rupiah)\n\nMasukkan angka saja.\n*Contoh : 2000000*\n\n\nKetik *0* untuk membatalkan' });
                         userStep[from].step = 2;
                     } else if (userMessage === "2") {
-                        await sock.sendMessage(message.key.remoteJid, { text: 'Berapa budget kamu untuk sebulan? (dalam rupiah)\n\nMasukkan angka saja.\n*Contoh : 50000000*\n\n\nKetik *0* untuk membatalkan' });
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total budget kamu untuk sekali menyediakan menu makanan? (dalam rupiah)\n\nMasukkan angka saja.\n*Contoh : 50000000*\n\n\nKetik *0* untuk membatalkan' });
                         userStep[from].step = 4; // Sediakan step untuk opsi "Bulanan" nanti
                     } else {
                         await sock.sendMessage(message.key.remoteJid, { text: 'Yah... Ada masalah nih.\nCoba lagi dan pastikan inputannya sudah sesuai ya.\n\nKamu mau rekomendasi menu yang mana?\n1 Sekali Makan\n2 Bulanan\n\nMasukkan angka saja.\n*Contoh : 1*\n\n\nKetik *0* untuk membatalkan' });
@@ -143,7 +143,7 @@ async function connectToWhatsApp() {
                         return;
                     }
                     userStep[from].totalBudget = userMessage;
-                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total porsi yang kamu sediakan untuk 1 menu makanan?\n\nMasukkan angka saja.\n*Contoh : 100*\n\n\nKetik *0* untuk membatalkan' });
+                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total porsi yang kamu sediakan untuk untuk sekali menyediakan menu makanan?\n\nMasukkan angka saja.\n*Contoh : 100*\n\n\nKetik *0* untuk membatalkan' });
                     userStep[from].step = 3;
                     break;
 
@@ -200,7 +200,7 @@ async function connectToWhatsApp() {
                     }
                     userStep[from].totalBudget = parseInt(userMessage); // Pastikan nilai diubah menjadi integer
                     console.log("Total Budget set to:", userStep[from].totalBudget); // Logging untuk debugging
-                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total porsi yang kamu sediakan untuk menu bulanan?\n\nMasukkan angka saja.\n*Contoh : 1000*\n\n\nKetik *0* untuk membatalkan' });
+                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total porsi yang kamu sediakan untuk untuk sekali menyediakan menu makanan?\n\nMasukkan angka saja.\n*Contoh : 1000*\n\n\nKetik *0* untuk membatalkan' });
                     userStep[from].step = 5;
                     break;
                     
@@ -211,17 +211,17 @@ async function connectToWhatsApp() {
                         return;
                     }
                     userStep[from].jumlahPorsi = userMessage;
-                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa hari unik yang kamu butuhkan? (1-30)\n\nMasukkan angka saja.\n*Contoh : 20*\n\n\nKetik *0* untuk membatalkan' });
+                    await sock.sendMessage(message.key.remoteJid, { text: 'Setiap berapa hari kamu mengulangi variasi menu makanan? pilih 1-30 (contoh: 1, 2, 30  dst.)\n\nMasukkan angka saja.\n*Contoh : 20*\n\n\nKetik *0* untuk membatalkan' });
                     userStep[from].step = 6;
                     break;
 
                 case 6:
                     if (isNaN(userMessage) || userMessage < 1 || userMessage > 30) {
-                        await sock.sendMessage(message.key.remoteJid, { text: 'Input tidak valid. Masukkan angka antara 1 dan 30.' });
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Input tidak valid. Masukkan angka antara 1 sampai 30.' });
                         return;
                     }
                     userStep[from].jumlahHariMenu = userMessage;
-                    await sock.sendMessage(message.key.remoteJid, { text: 'Berapa kali makan per hari? (1/2/3)\n\nMasukkan angka saja.\n*Contoh : 3*\n\n\nKetik *0* untuk membatalkan' });
+                    await sock.sendMessage(message.key.remoteJid, { text: '⁠Berapa kali kamu makan dalam 1 hari? (pilih : 1 / 2 / 3)\n\nMasukkan angka saja.\n*Contoh : 3*\n\n\nKetik *0* untuk membatalkan' });
                     userStep[from].step = 7;
                     break;
 

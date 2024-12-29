@@ -16,7 +16,7 @@ def load_menu_data(phone_number, token):
 
     try:
         headers = {'Authorization': f'Bearer {token}'}
-        url = f'http://127.0.0.1:8000/api/mitra/json/{phone_number}'
+        url = f'https://chatbot.kalorize.com/api/mitra/json/{phone_number}'
         print(f"Mengakses API: {url} dengan token {token}")
 
         response = requests.get(url, headers=headers)
