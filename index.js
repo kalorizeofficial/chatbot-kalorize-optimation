@@ -127,7 +127,7 @@ async function connectToWhatsApp() {
 
                 case 1:
                     if (userMessage === "1") {
-                        await sock.sendMessage(message.key.remoteJid, { text: ' Berapa total budget kamu untuk sekali menyediakan menu makanan? (dalam rupiah)\n\nMasukkan angka saja.\n*Contoh : 2000000*\n\n\nKetik *0* untuk membatalkan' });
+                        await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total budget kamu untuk sekali menyediakan menu makanan? (dalam rupiah)\n\nMasukkan angka saja.\n*Contoh : 2000000*\n\n\nKetik *0* untuk membatalkan' });
                         userStep[from].step = 2;
                     } else if (userMessage === "2") {
                         await sock.sendMessage(message.key.remoteJid, { text: 'Berapa total budget kamu untuk sekali menyediakan menu makanan? (dalam rupiah)\n\nMasukkan angka saja.\n*Contoh : 50000000*\n\n\nKetik *0* untuk membatalkan' });
