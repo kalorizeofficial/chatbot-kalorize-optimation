@@ -58,17 +58,15 @@ def calculate_monthly_menu(menu_data, jumlah_porsi, budget, jumlah_hari_menu, ma
         return []
 
     # Pastikan jumlah menu unik cukup
-    required_menus = jumlah_hari_menu * makan_per_hari
-    if len(filtered_data) < required_menus:
+    if len(filtered_data) < jumlah_hari_menu:
         print(f"Jumlah menu unik tidak cukup. Menggunakan seluruh data yang tersedia.")
-        filtered_data = (filtered_data * ((required_menus // len(filtered_data)) + 1))[:required_menus]
+        filtered_data = (filtered_data * ((jumlah_hari_menu // len(filtered_data)) + 1))[:jumlah_hari_menu]
 
-    # Acak menu unik
-    random.shuffle(filtered_data)
-
-    # Distribusikan menu ke dalam 30 hari
+    # Distribusikan menu berdasarkan jumlah_hari_menu
     total_makan = 30 * makan_per_hari
-    complete_menu = filtered_data * (total_makan // len(filtered_data)) + filtered_data[:total_makan % len(filtered_data)]
+    complete_menu = []
+    for i in range(total_makan):
+        complete_menu.append(filtered_data[i % (jumlah_hari_menu * makan_per_hari)])
 
     # Tambahkan informasi hari dan makan ke setiap menu
     menu_output = []
